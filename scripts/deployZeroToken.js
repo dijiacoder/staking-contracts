@@ -1,12 +1,18 @@
 const { ethers } = require("hardhat");
 
 /**
+ * 
+ * 部署 ZeroToken
+ * 
+ * 使用方法:
  * npx hardhat run scripts/deployZeroToken.js --network sepolia
  * 
- * Deploying contracts with the account: 0x248b56aa46fA791ef70a217FE2AE631049eF9472
+ * 打印：
+ * Deploying contracts with the account: 0x7779a76dEfb9F998c15463E286056E0aBE054180
  * Account balance: 183713370678994940
  * Deploying ZeroToken...
- * ZeroToken deployed to: 0x40Ccfb3A900EB744fCC5f810dD321E6Dc3010D74  
+ * ZeroToken deployed to: 0xEAcfDAC9DC788a38Df4369a91adc3890D6478615
+ * 
  */
 async function main() {
   const [deployer] = await ethers.getSigners();
