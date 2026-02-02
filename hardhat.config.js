@@ -21,10 +21,12 @@ module.exports = {
       url: "http://127.0.0.1:8545"
     },
     sepolia: {
-      url: process.env.ALCHEMY_API_KEY ? 
-        "https://sepolia.infura.io/v3/" + process.env.ALCHEMY_API_KEY : 
-        "https://sepolia.infura.io/v3/YOUR_INFURA_PROJECT_ID",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      url: process.env.RPC_URL || "https://sepolia.infura.io/v3/YOUR_INFURA_PROJECT_ID",
+      accounts: [
+        ...(process.env.PRIVATE_KEY_1 ? [process.env.PRIVATE_KEY_1] : []),
+        ...(process.env.PRIVATE_KEY_2 ? [process.env.PRIVATE_KEY_2] : []),
+        ...(process.env.PRIVATE_KEY_3 ? [process.env.PRIVATE_KEY_3] : [])
+      ],
       gasPrice: 30000000000, // 30 Gwei
     },
   },
