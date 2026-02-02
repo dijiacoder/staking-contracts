@@ -28,21 +28,21 @@ async function main() {
     return;
   }
   
-  // Add delay function
+  // 延时函数
   const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
   
-  // Get the ZeroToken address from the stake contract
+  // 获取 ZeroToken 地址
   const zeroTokenAddress = await zeroStake.ZeroToken();
   console.log("ZeroToken address in stake contract:", zeroTokenAddress);
   
   try {
     console.log("Sending transaction...");
     
-    // Check if the deployer has ADMIN_ROLE
+    // 检查部署者是否具有 ADMIN_ROLE
     const adminRole = await zeroStake.ADMIN_ROLE();
     const deployerIsAdmin = await zeroStake.hasRole(adminRole, deployer.address);
     
-    // Also check DEFAULT_ADMIN_ROLE
+    // 检查 DEFAULT_ADMIN_ROLE
     const defaultAdminRole = await zeroStake.DEFAULT_ADMIN_ROLE();
     const deployerIsDefaultAdmin = await zeroStake.hasRole(defaultAdminRole, deployer.address);
     
@@ -53,46 +53,66 @@ async function main() {
       console.log("Warning: Deployer does not have ADMIN_ROLE. This transaction might fail.");
     }
     
-    // Send transaction with explicit nonce
+    // 显示即将添加的池信息
+    const currentPoolLength = await zeroStake.poolLength();
+    console.log("\nAdding new pool:");
+    console.log("- Pool index:", currentPoolLength.toString());
+    console.log("- Staking token:", ethers.ZeroAddress, "(ETH pool)");
+    console.log("- Pool weight:", 500);
+    console.log("- Min deposit amount:", 1000, "wei");
+    console.log("- Unstake locked blocks:", 2160);
+    
+    // 发送交易
     const tx = await zeroStake.connect(deployer).addPool(
-      ethers.ZeroAddress,   // 质押代币的地址, 如果是第一个池，则必须是 0x0, 代表ETH池
-      500,                  // 质押池的权重
-      1000,                  // 最小存款金额, 如果是ETH, 单位wei
-      2160,                 // 取消质押锁定的区块数
-      true,                 // 是否批量更新所有池
+      ethers.ZeroAddress,   // 质押代币地址 (0x0 = ETH池)
+      500,                  // 质押池权重
+      1000,                 // 最小存款金额 (wei)
+      2160,                 // 取消质押锁定区块数
+      true,                 // 是否批量更新池
       {
         nonce: nonce,
-        gasLimit: 500000, // Explicitly set gas limit
+        gasLimit: 500000,
       }
     );
     
-    console.log("Transaction sent, hash:", tx.hash);
+    console.log("\nTransaction sent, hash:", tx.hash);
     console.log("Waiting for confirmation...");
     
-    // Wait for transaction confirmation
-    let receipt = await tx.wait(1); // Wait for 1 block confirmation
+    // 等待交易确认
+    const receipt = await tx.wait(1);
     
-    console.log("Transaction successful! Gas used:", receipt.gasUsed.toString());
+    console.log("\n=== Transaction Successful ===");
+    console.log("Gas used:", receipt.gasUsed.toString());
     console.log("Block number:", receipt.blockNumber);
     
-    // Wait a bit more and then query, to ensure the state is updated
+    // 等待状态更新
     await delay(3000);
     
-    // Query the added pool
+    // 查询更新后的池数量
     const finalPoolLength = await zeroStake.poolLength();
-    console.log("Current pool count:", finalPoolLength.toString());
+    console.log("\nCurrent pool count:", finalPoolLength.toString());
+    
+    // 如果有新的池，显示其信息
+    if (finalPoolLength > 0) {
+      const newPool = await zeroStake.pool(finalPoolLength - 1n);
+      console.log("\nNew pool details:");
+      console.log("- Token address:", newPool.stTokenAddress);
+      console.log("- Pool weight:", newPool.poolWeight.toString());
+      console.log("- Min deposit:", newPool.minDepositAmount.toString(), "wei");
+      console.log("- Locked blocks:", newPool.unstakeLockedBlocks.toString());
+    }
 
   } catch (error) {
-    console.error("错误详情:", error.message);
+    console.error("\n=== Error ===");
+    console.error(error.message);
     
-    if (error.message.includes("in-flight transaction limit")) {
-      console.log("\n解决方案:");
-      console.log("1. 等待 1-2 分钟让待处理的交易完成");
-      console.log("2. 在 Etherscan 上检查你的地址是否有待处理交易: https://sepolia.etherscan.io/address/" + deployer.address);
-      console.log("3. 考虑升级到付费的 Alchemy 计划以获得更高的速率限制");
-    }
+    const msg = error.message;
+    if (msg.includes("AccessControl")) console.log("\nTip: Grant ADMIN_ROLE to deployer address");
+    else if (msg.includes("in-flight")) console.log("\nTip: Wait 1-2 min or check https://sepolia.etherscan.io/address/" + deployer.address);
+    else if (msg.includes("invalid staking token")) console.log("\nTip: Use ethers.ZeroAddress for first ETH pool");
+    else if (msg.includes("Already ended")) console.log("\nTip: Staking period ended, update endBlock in contract");
     
-    throw error;
+    process.exit(1);
   }
 }
 
