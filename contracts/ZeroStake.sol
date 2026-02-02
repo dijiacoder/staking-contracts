@@ -30,15 +30,15 @@ contract ZeroStake is
 
     // ************************************** DATA STRUCTURE **************************************
     /*
-    Basically, any point in time, the amount of MetaNodes entitled to a user but is pending to be distributed is:
+    Basically, any point in time, the amount of ZeroTokens entitled to a user but is pending to be distributed is:
 
-    pending MetaNode = (user.stAmount * pool.accMetaNodePerST) - user.finishedMetaNode
+    pending ZeroToken = (user.stAmount * pool.accZeroTokenPerST) - user.finishedZeroToken
 
     Whenever a user deposits or withdraws staking tokens to a pool. Here's what happens:
-    1. The pool's `accMetaNodePerST` (and `lastRewardBlock`) gets updated.
-    2. User receives the pending MetaNode sent to his/her address.
+    1. The pool's `accZeroTokenPerST` (and `lastRewardBlock`) gets updated.
+    2. User receives the pending ZeroToken sent to his/her address.
     3. User's `stAmount` gets updated.
-    4. User's `finishedMetaNode` gets updated.
+    4. User's `finishedZeroToken` gets updated.
     */
     struct Pool {
         // Address of staking token
@@ -47,11 +47,11 @@ contract ZeroStake is
         // Weight of pool
         // 不同资金池所占的权重
         uint256 poolWeight;
-        // Last block number that MetaNodes distribution occurs for pool
+        // Last block number that ZeroTokens distribution occurs for pool
         uint256 lastRewardBlock;
-        // Accumulated MetaNodes per staking token of pool
-        // 质押 1个ETH经过1个区块高度，能拿到 n 个MetaNode
-        uint256 accMetaNodePerST;
+        // Accumulated ZeroTokens per staking token of pool
+        // 质押 1个ETH经过1个区块高度，能拿到 n 个ZeroToken
+        uint256 accZeroTokenPerST;
         // Staking token amount
         // 质押的代币数量
         uint256 stTokenAmount;
@@ -75,32 +75,32 @@ contract ZeroStake is
         // Staking token amount that user provided
         // 用户在当前资金池，质押的代币数量
         uint256 stAmount;
-        // Finished distributed MetaNodes to user 最终 MetaNode 得到的数量
-        // 用户在当前资金池，已经领取的 MetaNode 数量
-        uint256 finishedMetaNode;
-        // Pending to claim MetaNodes 当前可取数量
-        // 用户在当前资金池，当前可领取的 MetaNode 数量
-        uint256 pendingMetaNode;
+        // Finished distributed ZeroTokens to user 最终 ZeroToken 得到的数量
+        // 用户在当前资金池，已经领取的 ZeroToken 数量
+        uint256 finishedZeroToken;
+        // Pending to claim ZeroTokens 当前可取数量
+        // 用户在当前资金池，当前可领取的 ZeroToken 数量
+        uint256 pendingZeroToken;
         // Withdraw request list
         // 用户在当前资金池，取消质押的记录
         UnstakeRequest[] requests;
     }
 
     // ************************************** STATE VARIABLES **************************************
-    // First block that MetaNodeStake will start from
+    // First block that ZeroTokenStake will start from
     uint256 public startBlock; // 质押开始区块高度
-    // First block that MetaNodeStake will end from
+    // First block that ZeroTokenStake will end from
     uint256 public endBlock; // 质押结束区块高度
-    // MetaNode token reward per block
-    uint256 public MetaNodePerBlock; // 每个区块高度，MetaNode 的奖励数量
+    // ZeroToken token reward per block
+    uint256 public ZeroTokenPerBlock; // 每个区块高度，ZeroToken 的奖励数量
 
     // Pause the withdraw function
     bool public withdrawPaused; // 是否暂停提现
     // Pause the claim function
     bool public claimPaused; // 是否暂停领取
 
-    // MetaNode token
-    IERC20 public MetaNode; // MetaNode 代币地址
+    // ZeroToken token
+    IERC20 public ZeroToken; // ZeroToken 代币地址
 
     // Total pool weight / Sum of all pool weights
     uint256 public totalPoolWeight; // 所有资金池的权重总和
@@ -111,7 +111,7 @@ contract ZeroStake is
 
     // ************************************** EVENT **************************************
 
-    event SetMetaNode(IERC20 indexed MetaNode);
+    event SetZeroToken(IERC20 indexed ZeroToken);
 
     event PauseWithdraw();
 
@@ -125,7 +125,7 @@ contract ZeroStake is
 
     event SetEndBlock(uint256 indexed endBlock);
 
-    event SetMetaNodePerBlock(uint256 indexed MetaNodePerBlock);
+    event SetZeroTokenPerBlock(uint256 indexed ZeroTokenPerBlock);
 
     event AddPool(
         address indexed stTokenAddress,
@@ -150,7 +150,7 @@ contract ZeroStake is
     event UpdatePool(
         uint256 indexed poolId,
         uint256 indexed lastRewardBlock,
-        uint256 totalMetaNode
+        uint256 totalZeroToken
     );
 
     event Deposit(address indexed user, uint256 indexed poolId, uint256 amount);
@@ -171,7 +171,7 @@ contract ZeroStake is
     event Claim(
         address indexed user,
         uint256 indexed poolId,
-        uint256 MetaNodeReward
+        uint256 ZeroTokenReward
     );
 
     // ************************************** MODIFIER **************************************
@@ -192,16 +192,16 @@ contract ZeroStake is
     }
 
     /**
-     * @notice Set MetaNode token address. Set basic info when deploying.
+     * @notice Set ZeroToken token address. Set basic info when deploying.
      */
     function initialize(
-        IERC20 _MetaNode,
+        IERC20 _ZeroToken,
         uint256 _startBlock,
         uint256 _endBlock,
-        uint256 _MetaNodePerBlock
+        uint256 _ZeroTokenPerBlock
     ) public initializer {
         require(
-            _startBlock <= _endBlock && _MetaNodePerBlock > 0,
+            _startBlock <= _endBlock && _ZeroTokenPerBlock > 0,
             "invalid parameters"
         );
 
@@ -211,11 +211,11 @@ contract ZeroStake is
         _grantRole(UPGRADE_ROLE, msg.sender);
         _grantRole(ADMIN_ROLE, msg.sender);
 
-        setMetaNode(_MetaNode);
+        setZeroToken(_ZeroToken);
 
         startBlock = _startBlock;
         endBlock = _endBlock;
-        MetaNodePerBlock = _MetaNodePerBlock;
+        ZeroTokenPerBlock = _ZeroTokenPerBlock;
     }
 
     function _authorizeUpgrade(
@@ -225,12 +225,12 @@ contract ZeroStake is
     // ************************************** ADMIN FUNCTION **************************************
 
     /**
-     * @notice Set MetaNode token address. Can only be called by admin
+     * @notice Set ZeroToken token address. Can only be called by admin
      */
-    function setMetaNode(IERC20 _MetaNode) public onlyRole(ADMIN_ROLE) {
-        MetaNode = _MetaNode;
+    function setZeroToken(IERC20 _ZeroToken) public onlyRole(ADMIN_ROLE) {
+        ZeroToken = _ZeroToken;
 
-        emit SetMetaNode(MetaNode);
+        emit SetZeroToken(ZeroToken);
     }
 
     /**
@@ -306,21 +306,21 @@ contract ZeroStake is
     }
 
     /**
-     * @notice Update the MetaNode reward amount per block. Can only be called by admin.
+     * @notice Update the ZeroToken reward amount per block. Can only be called by admin.
      */
-    function setMetaNodePerBlock(
-        uint256 _MetaNodePerBlock
+    function setZeroTokenPerBlock(
+        uint256 _ZeroTokenPerBlock
     ) public onlyRole(ADMIN_ROLE) {
-        require(_MetaNodePerBlock > 0, "invalid parameter");
+        require(_ZeroTokenPerBlock > 0, "invalid parameter");
 
-        MetaNodePerBlock = _MetaNodePerBlock;
+        ZeroTokenPerBlock = _ZeroTokenPerBlock;
 
-        emit SetMetaNodePerBlock(_MetaNodePerBlock);
+        emit SetZeroTokenPerBlock(_ZeroTokenPerBlock);
     }
 
     /**
      * @notice Add a new staking to pool. Can only be called by admin
-     * DO NOT add the same staking token more than once. MetaNode rewards will be messed up if you do
+     * DO NOT add the same staking token more than once. ZeroToken rewards will be messed up if you do
      */
     function addPool(
         address _stTokenAddress,
@@ -360,7 +360,7 @@ contract ZeroStake is
                 stTokenAddress: _stTokenAddress,
                 poolWeight: _poolWeight,
                 lastRewardBlock: lastRewardBlock,
-                accMetaNodePerST: 0,
+                accZeroTokenPerST: 0,
                 stTokenAmount: 0,
                 minDepositAmount: _minDepositAmount,
                 unstakeLockedBlocks: _unstakeLockedBlocks
@@ -439,31 +439,31 @@ contract ZeroStake is
         }
         require(_from <= _to, "end block must be greater than start block");
         bool success;
-        (success, multiplier) = (_to - _from).tryMul(MetaNodePerBlock);
+        (success, multiplier) = (_to - _from).tryMul(ZeroTokenPerBlock);
         require(success, "multiplier overflow");
     }
 
     /**
-     * @notice Get pending MetaNode amount of user in pool
+     * @notice Get pending ZeroToken amount of user in pool
      */
-    function pendingMetaNode(
+    function pendingZeroToken(
         uint256 _pid,
         address _user
     ) external view checkPid(_pid) returns (uint256) {
-        return pendingMetaNodeByBlockNumber(_pid, _user, block.number);
+        return pendingZeroTokenByBlockNumber(_pid, _user, block.number);
     }
 
     /**
-     * @notice Get pending MetaNode amount of user by block number in pool
+     * @notice Get pending ZeroToken amount of user by block number in pool
      */
-    function pendingMetaNodeByBlockNumber(
+    function pendingZeroTokenByBlockNumber(
         uint256 _pid,
         address _user,
         uint256 _blockNumber
     ) public view checkPid(_pid) returns (uint256) {
         Pool storage pool_ = pool[_pid];
         User storage user_ = user[_pid][_user];
-        uint256 accMetaNodePerST = pool_.accMetaNodePerST;
+        uint256 accZeroTokenPerST = pool_.accZeroTokenPerST;
         uint256 stSupply = pool_.stTokenAmount;
 
         if (_blockNumber > pool_.lastRewardBlock && stSupply != 0) {
@@ -471,19 +471,19 @@ contract ZeroStake is
                 pool_.lastRewardBlock,
                 _blockNumber
             );
-            uint256 MetaNodeForPool = (multiplier * pool_.poolWeight) /
+            uint256 ZeroTokenForPool = (multiplier * pool_.poolWeight) /
                 totalPoolWeight;
-            accMetaNodePerST =
-                accMetaNodePerST +
-                (MetaNodeForPool * (1 ether)) /
+            accZeroTokenPerST =
+                accZeroTokenPerST +
+                (ZeroTokenForPool * (1 ether)) /
                 stSupply;
         }
 
         return
-            (user_.stAmount * accMetaNodePerST) /
+            (user_.stAmount * accZeroTokenPerST) /
             (1 ether) -
-            user_.finishedMetaNode +
-            user_.pendingMetaNode;
+            user_.finishedZeroToken +
+            user_.pendingZeroToken;
     }
 
     /**
@@ -532,35 +532,35 @@ contract ZeroStake is
             return;
         }
 
-        (bool success1, uint256 totalMetaNode) = getMultiplier(
+        (bool success1, uint256 totalZeroToken) = getMultiplier(
             pool_.lastRewardBlock,
             block.number
         ).tryMul(pool_.poolWeight);
         require(success1, "overflow");
 
-        (success1, totalMetaNode) = totalMetaNode.tryDiv(totalPoolWeight);
+        (success1, totalZeroToken) = totalZeroToken.tryDiv(totalPoolWeight);
         require(success1, "overflow");
 
         uint256 stSupply = pool_.stTokenAmount;
         if (stSupply > 0) {
-            (bool success2, uint256 totalMetaNode_) = totalMetaNode.tryMul(
+            (bool success2, uint256 totalZeroToken_) = totalZeroToken.tryMul(
                 1 ether
             );
             require(success2, "overflow");
 
-            (success2, totalMetaNode_) = totalMetaNode_.tryDiv(stSupply);
+            (success2, totalZeroToken_) = totalZeroToken_.tryDiv(stSupply);
             require(success2, "overflow");
 
-            (bool success3, uint256 accMetaNodePerST) = pool_
-                .accMetaNodePerST
-                .tryAdd(totalMetaNode_);
+            (bool success3, uint256 accZeroTokenPerST) = pool_
+                .accZeroTokenPerST
+                .tryAdd(totalZeroToken_);
             require(success3, "overflow");
-            pool_.accMetaNodePerST = accMetaNodePerST;
+            pool_.accZeroTokenPerST = accZeroTokenPerST;
         }
 
         pool_.lastRewardBlock = block.number;
 
-        emit UpdatePool(_pid, pool_.lastRewardBlock, totalMetaNode);
+        emit UpdatePool(_pid, pool_.lastRewardBlock, totalZeroToken);
     }
 
     /**
@@ -574,7 +574,7 @@ contract ZeroStake is
     }
 
     /**
-     * @notice Deposit staking ETH for MetaNode rewards
+     * @notice Deposit staking ETH for ZeroToken rewards
      */
     function depositETH() public payable whenNotPaused {
         Pool storage pool_ = pool[ETH_PID];
@@ -593,7 +593,7 @@ contract ZeroStake is
     }
 
     /**
-     * @notice Deposit staking token for MetaNode rewards
+     * @notice Deposit staking token for ZeroToken rewards
      * Before depositing, user needs approve this contract to be able to spend or transfer their staking tokens
      *
      * @param _pid       Id of the pool to be deposited to
@@ -639,12 +639,12 @@ contract ZeroStake is
 
         updatePool(_pid);
 
-        uint256 pendingMetaNode_ = (user_.stAmount * pool_.accMetaNodePerST) /
+        uint256 pendingZeroToken_ = (user_.stAmount * pool_.accZeroTokenPerST) /
             (1 ether) -
-            user_.finishedMetaNode;
+            user_.finishedZeroToken;
 
-        if (pendingMetaNode_ > 0) {
-            user_.pendingMetaNode = user_.pendingMetaNode + pendingMetaNode_;
+        if (pendingZeroToken_ > 0) {
+            user_.pendingZeroToken = user_.pendingZeroToken + pendingZeroToken_;
         }
 
         if (_amount > 0) {
@@ -658,8 +658,8 @@ contract ZeroStake is
         }
 
         pool_.stTokenAmount = pool_.stTokenAmount - _amount;
-        user_.finishedMetaNode =
-            (user_.stAmount * pool_.accMetaNodePerST) /
+        user_.finishedZeroToken =
+            (user_.stAmount * pool_.accZeroTokenPerST) /
             (1 ether);
 
         emit RequestUnstake(msg.sender, _pid, _amount);
@@ -709,7 +709,7 @@ contract ZeroStake is
     }
 
     /**
-     * @notice Claim MetaNode tokens reward
+     * @notice Claim ZeroToken tokens reward
      *
      * @param _pid       Id of the pool to be claimed from
      */
@@ -721,27 +721,27 @@ contract ZeroStake is
 
         updatePool(_pid);
 
-        uint256 pendingMetaNode_ = (user_.stAmount * pool_.accMetaNodePerST) /
+        uint256 pendingZeroToken_ = (user_.stAmount * pool_.accZeroTokenPerST) /
             (1 ether) -
-            user_.finishedMetaNode +
-            user_.pendingMetaNode;
+            user_.finishedZeroToken +
+            user_.pendingZeroToken;
 
-        if (pendingMetaNode_ > 0) {
-            user_.pendingMetaNode = 0;
-            _safeMetaNodeTransfer(msg.sender, pendingMetaNode_);
+        if (pendingZeroToken_ > 0) {
+            user_.pendingZeroToken = 0;
+            _safeZeroTokenTransfer(msg.sender, pendingZeroToken_);
         }
 
-        user_.finishedMetaNode =
-            (user_.stAmount * pool_.accMetaNodePerST) /
+        user_.finishedZeroToken =
+            (user_.stAmount * pool_.accZeroTokenPerST) /
             (1 ether);
 
-        emit Claim(msg.sender, _pid, pendingMetaNode_);
+        emit Claim(msg.sender, _pid, pendingZeroToken_);
     }
 
     // ************************************** INTERNAL FUNCTION **************************************
 
     /**
-     * @notice Deposit staking token for MetaNode rewards
+     * @notice Deposit staking token for ZeroToken rewards
      *
      * @param _pid       Id of the pool to be deposited to
      * @param _amount    Amount of staking tokens to be deposited
@@ -753,25 +753,25 @@ contract ZeroStake is
         updatePool(_pid);
 
         if (user_.stAmount > 0) {
-            // uint256 accST = user_.stAmount.mulDiv(pool_.accMetaNodePerST, 1 ether);
+            // uint256 accST = user_.stAmount.mulDiv(pool_.accZeroTokenPerST, 1 ether);
             (bool success1, uint256 accST) = user_.stAmount.tryMul(
-                pool_.accMetaNodePerST
+                pool_.accZeroTokenPerST
             );
-            require(success1, "user stAmount mul accMetaNodePerST overflow");
+            require(success1, "user stAmount mul accZeroTokenPerST overflow");
             (success1, accST) = accST.tryDiv(1 ether);
             require(success1, "accST div 1 ether overflow");
 
-            (bool success2, uint256 pendingMetaNode_) = accST.trySub(
-                user_.finishedMetaNode
+            (bool success2, uint256 pendingZeroToken_) = accST.trySub(
+                user_.finishedZeroToken
             );
-            require(success2, "accST sub finishedMetaNode overflow");
+            require(success2, "accST sub finishedZeroToken overflow");
 
-            if (pendingMetaNode_ > 0) {
-                (bool success3, uint256 _pendingMetaNode) = user_
-                    .pendingMetaNode
-                    .tryAdd(pendingMetaNode_);
-                require(success3, "user pendingMetaNode overflow");
-                user_.pendingMetaNode = _pendingMetaNode;
+            if (pendingZeroToken_ > 0) {
+                (bool success3, uint256 _pendingZeroToken) = user_
+                    .pendingZeroToken
+                    .tryAdd(pendingZeroToken_);
+                require(success3, "user pendingZeroToken overflow");
+                user_.pendingZeroToken = _pendingZeroToken;
             }
         }
 
@@ -787,33 +787,33 @@ contract ZeroStake is
         require(success5, "pool stTokenAmount overflow");
         pool_.stTokenAmount = stTokenAmount;
 
-        // user_.finishedMetaNode = user_.stAmount.mulDiv(pool_.accMetaNodePerST, 1 ether);
-        (bool success6, uint256 finishedMetaNode) = user_.stAmount.tryMul(
-            pool_.accMetaNodePerST
+        // user_.finishedZeroToken = user_.stAmount.mulDiv(pool_.accZeroTokenPerST, 1 ether);
+        (bool success6, uint256 finishedZeroToken) = user_.stAmount.tryMul(
+            pool_.accZeroTokenPerST
         );
-        require(success6, "user stAmount mul accMetaNodePerST overflow");
+        require(success6, "user stAmount mul accZeroTokenPerST overflow");
 
-        (success6, finishedMetaNode) = finishedMetaNode.tryDiv(1 ether);
-        require(success6, "finishedMetaNode div 1 ether overflow");
+        (success6, finishedZeroToken) = finishedZeroToken.tryDiv(1 ether);
+        require(success6, "finishedZeroToken div 1 ether overflow");
 
-        user_.finishedMetaNode = finishedMetaNode;
+        user_.finishedZeroToken = finishedZeroToken;
 
         emit Deposit(msg.sender, _pid, _amount);
     }
 
     /**
-     * @notice Safe MetaNode transfer function, just in case if rounding error causes pool to not have enough MetaNodes
+     * @notice Safe ZeroToken transfer function, just in case if rounding error causes pool to not have enough ZeroTokens
      *
-     * @param _to        Address to get transferred MetaNodes
-     * @param _amount    Amount of MetaNode to be transferred
+     * @param _to        Address to get transferred ZeroTokens
+     * @param _amount    Amount of ZeroToken to be transferred
      */
-    function _safeMetaNodeTransfer(address _to, uint256 _amount) internal {
-        uint256 MetaNodeBal = MetaNode.balanceOf(address(this));
+    function _safeZeroTokenTransfer(address _to, uint256 _amount) internal {
+        uint256 ZeroTokenBal = ZeroToken.balanceOf(address(this));
 
-        if (_amount > MetaNodeBal) {
-            MetaNode.transfer(_to, MetaNodeBal);
+        if (_amount > ZeroTokenBal) {
+            ZeroToken.transfer(_to, ZeroTokenBal);
         } else {
-            MetaNode.transfer(_to, _amount);
+            ZeroToken.transfer(_to, _amount);
         }
     }
 

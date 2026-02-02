@@ -8,7 +8,7 @@ const { ethers } = require("hardhat");
  */
 async function main() {
   // ZeroStake 合约地址
-  const zeroStakeAddress = "0x16fa28EC9e74a171F7f3d0B483b84bB19C67aD18";
+  const zeroStakeAddress = "0x915C4B26C6440e101066CF946f7eb6BF3784B77E";
   
   const zeroStake = await ethers.getContractAt("ZeroStake", zeroStakeAddress);
 
@@ -32,27 +32,33 @@ async function main() {
   const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
   
   // Get the ZeroToken address from the stake contract
-  const zeroTokenAddress = await zeroStake.token();
+  const zeroTokenAddress = await zeroStake.ZeroToken();
   console.log("ZeroToken address in stake contract:", zeroTokenAddress);
   
   try {
     console.log("Sending transaction...");
     
-    // Check if the deployer is the owner of the contract
-    const owner = await zeroStake.owner();
-    console.log("Contract owner:", owner);
-    console.log("Deployer is owner:", owner.toLowerCase() === deployer.address.toLowerCase());
+    // Check if the deployer has ADMIN_ROLE
+    const adminRole = await zeroStake.ADMIN_ROLE();
+    const deployerIsAdmin = await zeroStake.hasRole(adminRole, deployer.address);
     
-    if (owner.toLowerCase() !== deployer.address.toLowerCase()) {
-      console.log("Warning: Deployer is not the contract owner. This transaction might fail.");
+    // Also check DEFAULT_ADMIN_ROLE
+    const defaultAdminRole = await zeroStake.DEFAULT_ADMIN_ROLE();
+    const deployerIsDefaultAdmin = await zeroStake.hasRole(defaultAdminRole, deployer.address);
+    
+    console.log("Deployer is ADMIN_ROLE:", deployerIsAdmin);
+    console.log("Deployer is DEFAULT_ADMIN_ROLE:", deployerIsDefaultAdmin);
+    
+    if (!deployerIsAdmin && !deployerIsDefaultAdmin) {
+      console.log("Warning: Deployer does not have ADMIN_ROLE. This transaction might fail.");
     }
     
     // Send transaction with explicit nonce
     const tx = await zeroStake.connect(deployer).addPool(
       ethers.ZeroAddress,   // 质押代币的地址, 如果是第一个池，则必须是 0x0, 代表ETH池
       500,                  // 质押池的权重
-      100,                  // 最小存款金额, 如果是ETH, 单位wei
-      20,                   // 取消质押锁定的区块数
+      1000,                  // 最小存款金额, 如果是ETH, 单位wei
+      2160,                 // 取消质押锁定的区块数
       true,                 // 是否批量更新所有池
       {
         nonce: nonce,
@@ -75,7 +81,7 @@ async function main() {
     // Query the added pool
     const finalPoolLength = await zeroStake.poolLength();
     console.log("Current pool count:", finalPoolLength.toString());
-        
+
   } catch (error) {
     console.error("错误详情:", error.message);
     

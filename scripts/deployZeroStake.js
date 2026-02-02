@@ -9,16 +9,16 @@ const { ethers, upgrades } = require("hardhat");
  * 
  * 打印：
  * Deploying ZeroStake contract with the account: 0x7779a76dEfb9F998c15463E286056E0aBE054180
- * Account balance: 370540423475907698
+ * Account balance: 253116273475907698
  * Deploying ZeroStake with parameters:
  * - ZeroToken address: 0xEAcfDAC9DC788a38Df4369a91adc3890D6478615
  * - Start block: 10176170
  * - End block: 10400000
  * - Reward per block: 20000000000000000
  * Deploying ZeroStake proxy...
- * ZeroStake deployed to: 0x16fa28EC9e74a171F7f3d0B483b84bB19C67aD18
+ * ZeroStake deployed to: 0x915C4B26C6440e101066CF946f7eb6BF3784B77E
  * Verifying proxy implementation...
- * Implementation address: 0xC747BcdA135CBaA456552810Ca98F27cC7F859f1
+ * Implementation address: 0xf6be1c9c379B99B04B13C29faac59A1896b245bf
  * 
  */
 async function main() {
