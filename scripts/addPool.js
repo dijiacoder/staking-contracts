@@ -8,7 +8,7 @@ const { ethers } = require("hardhat");
  */
 async function main() {
   // ZeroStake 合约地址
-  const zeroStakeAddress = "0x915C4B26C6440e101066CF946f7eb6BF3784B77E";
+  const zeroStakeAddress = "0x9e0ba4bDA466501d22E797F86f1E55bd4512925D";
   
   const zeroStake = await ethers.getContractAt("ZeroStake", zeroStakeAddress);
 

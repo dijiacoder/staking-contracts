@@ -8,10 +8,10 @@ const { ethers } = require("hardhat");
  * npx hardhat run scripts/deployZeroToken.js --network sepolia
  * 
  * 打印：
- * Deploying contracts with the account: 0x7779a76dEfb9F998c15463E286056E0aBE054180
- * Account balance: 183713370678994940
+ * Deploying contracts with the account: 0x248b56aa46fA791ef70a217FE2AE631049eF9472
+ * Account balance: 1293566960678994940
  * Deploying ZeroToken...
- * ZeroToken deployed to: 0xEAcfDAC9DC788a38Df4369a91adc3890D6478615
+ * ZeroToken deployed to: 0x36d7166ba5D1e1576e3121E77F844547B80c4D30
  * 
  */
 async function main() {

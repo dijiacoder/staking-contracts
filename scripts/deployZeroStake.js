@@ -8,15 +8,15 @@ const { ethers, upgrades } = require("hardhat");
  * npx hardhat run scripts/deployZeroStake.js --network sepolia
  * 
  * 打印：
- * Deploying ZeroStake contract with the account: 0x7779a76dEfb9F998c15463E286056E0aBE054180
- * Account balance: 253116273475907698
+ * Deploying ZeroStake contract with the account: 0x248b56aa46fA791ef70a217FE2AE631049eF9472
+ * Account balance: 1264637960678994940
  * Deploying ZeroStake with parameters:
- * - ZeroToken address: 0xEAcfDAC9DC788a38Df4369a91adc3890D6478615
+ * - ZeroToken address: 0x36d7166ba5D1e1576e3121E77F844547B80c4D30
  * - Start block: 10176170
  * - End block: 10400000
  * - Reward per block: 20000000000000000
  * Deploying ZeroStake proxy...
- * ZeroStake deployed to: 0x915C4B26C6440e101066CF946f7eb6BF3784B77E
+ * ZeroStake deployed to: 0x9e0ba4bDA466501d22E797F86f1E55bd4512925D
  * Verifying proxy implementation...
  * Implementation address: 0xf6be1c9c379B99B04B13C29faac59A1896b245bf
  * 
@@ -27,7 +27,7 @@ async function main() {
   console.log("Account balance:", (await deployer.provider.getBalance(deployer.address)).toString());
 
   // ZeroToken 合约地址
-  const zeroTokenAddress = "0xEAcfDAC9DC788a38Df4369a91adc3890D6478615";
+  const zeroTokenAddress = "0x36d7166ba5D1e1576e3121E77F844547B80c4D30";
   
   // 质押起始区块高度,可以去sepolia上面读取最新的区块高度
   const startBlock = 10176170;
