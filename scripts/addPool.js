@@ -8,7 +8,7 @@ const { ethers } = require("hardhat");
  */
 async function main() {
   // ZeroStake 合约地址
-  const zeroStakeAddress = "0x9e0ba4bDA466501d22E797F86f1E55bd4512925D";
+  const zeroStakeAddress = "0xC9d008AA1Dee7467b203B7Eb2a0b5F5be0344706";
   
   const zeroStake = await ethers.getContractAt("ZeroStake", zeroStakeAddress);
 
@@ -67,7 +67,7 @@ async function main() {
       ethers.ZeroAddress,   // 质押代币地址 (0x0 = ETH池)
       500,                  // 质押池权重
       1000,                 // 最小存款金额 (wei)
-      2160,                 // 取消质押锁定区块数
+      50,                 // 取消质押锁定区块数
       true,                 // 是否批量更新池
       {
         nonce: nonce,

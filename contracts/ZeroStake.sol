@@ -128,9 +128,10 @@ contract ZeroStake is
     event SetZeroTokenPerBlock(uint256 indexed ZeroTokenPerBlock);
 
     event AddPool(
+        uint256 indexed poolId,
         address indexed stTokenAddress,
         uint256 indexed poolWeight,
-        uint256 indexed lastRewardBlock,
+        uint256 lastRewardBlock,
         uint256 minDepositAmount,
         uint256 unstakeLockedBlocks
     );
@@ -367,7 +368,9 @@ contract ZeroStake is
             })
         );
 
+        uint256 newPoolId = pool.length - 1;
         emit AddPool(
+            newPoolId,
             _stTokenAddress,
             _poolWeight,
             lastRewardBlock,
