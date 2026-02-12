@@ -8,7 +8,7 @@ const { ethers } = require("hardhat");
  */
 async function main() {
   // ZeroStake 合约地址
-  const zeroStakeAddress = "0xC9d008AA1Dee7467b203B7Eb2a0b5F5be0344706";
+  const zeroStakeAddress = "0x58C7F972fDBdb4075832653c5e8B132388Ec7bAb";
   
   const zeroStake = await ethers.getContractAt("ZeroStake", zeroStakeAddress);
 
@@ -60,7 +60,7 @@ async function main() {
     console.log("- Staking token:", ethers.ZeroAddress, "(ETH pool)");
     console.log("- Pool weight:", 500);
     console.log("- Min deposit amount:", 1000, "wei");
-    console.log("- Unstake locked blocks:", 2160);
+    console.log("- Unstake locked blocks:", 50);
     
     // 发送交易
     const tx = await zeroStake.connect(deployer).addPool(

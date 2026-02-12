@@ -48,6 +48,7 @@ contract ZeroStake is
         // 不同资金池所占的权重
         uint256 poolWeight;
         // Last block number that ZeroTokens distribution occurs for pool
+        // 池最后一次分配奖励的区块号
         uint256 lastRewardBlock;
         // Accumulated ZeroTokens per staking token of pool
         // 质押 1个ETH经过1个区块高度，能拿到 n 个ZeroToken
