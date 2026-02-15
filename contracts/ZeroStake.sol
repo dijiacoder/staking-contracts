@@ -42,22 +42,16 @@ contract ZeroStake is
     */
     struct Pool {
         // Address of staking token
-        // 质押代币的地址
         address stTokenAddress;
         // Weight of pool
-        // 不同资金池所占的权重
         uint256 poolWeight;
         // Last block number that ZeroTokens distribution occurs for pool
-        // 池最后一次分配奖励的区块号
         uint256 lastRewardBlock;
         // Accumulated ZeroTokens per staking token of pool
-        // 质押 1个ETH经过1个区块高度，能拿到 n 个ZeroToken
         uint256 accZeroTokenPerST;
         // Staking token amount
-        // 质押的代币数量
         uint256 stTokenAmount;
         // Min staking amount
-        // 最小质押数量
         uint256 minDepositAmount;
         // Withdraw locked blocks
         // Unstake locked blocks 解质押锁定的区块高度
