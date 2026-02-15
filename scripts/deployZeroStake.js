@@ -14,10 +14,10 @@ const { ethers, upgrades } = require("hardhat");
  * 
  */
 async function main() {
-  const [deployer] = await ethers.getSigners();
+  const [owner] = await ethers.getSigners();
 
-  const nonce = await ethers.provider.getTransactionCount(deployer.address, "latest");
-  const pendingNonce = await ethers.provider.getTransactionCount(deployer.address, "pending");
+  const nonce = await ethers.provider.getTransactionCount(owner.address, "latest");
+  const pendingNonce = await ethers.provider.getTransactionCount(owner.address, "pending");
 
   console.log("Current nonce:", nonce);
   console.log("Pending nonce:", pendingNonce);
@@ -28,8 +28,8 @@ async function main() {
     return;
   }
 
-  console.log("Deploying ZeroStake contract with the account:", deployer.address);
-  console.log("Account balance:", (await deployer.provider.getBalance(deployer.address)).toString());
+  console.log("Deploying ZeroStake contract with the account:", owner.address);
+  console.log("Account balance:", (await owner.provider.getBalance(owner.address)).toString());
 
   // ZeroToken 合约地址
   const zeroTokenAddress = "0x36d7166ba5D1e1576e3121E77F844547B80c4D30";

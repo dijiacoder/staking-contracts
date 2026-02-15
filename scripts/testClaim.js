@@ -8,16 +8,16 @@ const { ethers } = require("hardhat");
  */
 async function main() {
   // ZeroStake 合约地址
-  const zeroStakeAddress = "0x915C4B26C6440e101066CF946f7eb6BF3784B77E";
+  const zeroStakeAddress = "0x2Ca55714a7F649E3295458D0709B452139f43A1c";
   
   const zeroStake = await ethers.getContractAt("ZeroStake", zeroStakeAddress);
 
-  const [deployer] = await ethers.getSigners();
+  const [owner,test02,test03] = await ethers.getSigners();
 
-  console.log("Deployer address:", deployer.address);
+  console.log("user address:", test02.address);
   
-  const nonce = await ethers.provider.getTransactionCount(deployer.address, "latest");
-  const pendingNonce = await ethers.provider.getTransactionCount(deployer.address, "pending");
+  const nonce = await ethers.provider.getTransactionCount(test02.address, "latest");
+  const pendingNonce = await ethers.provider.getTransactionCount(test02.address, "pending");
   
   console.log("Current nonce:", nonce);
   console.log("Pending nonce:", pendingNonce);
@@ -41,14 +41,14 @@ async function main() {
     console.log("- Pool weight:", poolInfo.poolWeight.toString());
     
     // 获取用户的质押信息
-    const userInfo = await zeroStake.user(pid, deployer.address);
+    const userInfo = await zeroStake.user(pid, test02.address);
     console.log("User info for pool", pid, ":");
     console.log("- Amount staked:", ethers.formatEther(userInfo.stAmount), "ETH");
     console.log("- Finished ZeroToken:", userInfo.finishedZeroToken.toString());
     console.log("- Pending ZeroToken:", userInfo.pendingZeroToken.toString());
     
     // 获取可领取的奖励金额
-    const pendingRewards = await zeroStake.pendingZeroToken(pid, deployer.address);
+    const pendingRewards = await zeroStake.pendingZeroToken(pid, test02.address);
     console.log("Pending rewards:", ethers.formatEther(pendingRewards), "ZeroTokens");
     
     if (pendingRewards === 0n) {
@@ -61,7 +61,7 @@ async function main() {
     console.log("- Rewards amount:", ethers.formatEther(pendingRewards), "ZeroTokens");
     
     // 领取奖励交易
-    const tx = await zeroStake.connect(deployer).claim(pid, {
+    const tx = await zeroStake.connect(test02).claim(pid, {
       nonce: nonce,
       gasLimit: 500000,
     });
@@ -77,9 +77,11 @@ async function main() {
     console.log("Block number:", receipt.blockNumber);
     
     // 查询更新后的可领取奖励
-    const updatedPendingRewards = await zeroStake.pendingZeroToken(pid, deployer.address);
+    const updatedPendingRewards = await zeroStake.pendingZeroToken(pid, test02.address);
     console.log("Updated pending rewards:", ethers.formatEther(updatedPendingRewards), "ZeroTokens");
     console.log("- Claim completed successfully!");
+
+    // 查询 ZeroToken的数量
   } catch (error) {
     console.error("=== Error ===");
     console.error(error.message);

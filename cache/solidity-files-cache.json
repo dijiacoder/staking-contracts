@@ -1090,8 +1090,8 @@
       ]
     },
     "D:\\DijiaCoder\\WEB3\\dijiacoder\\staking-contracts\\contracts\\ZeroToken.sol": {
-      "lastModificationDate": 1769954522810,
-      "contentHash": "21a8ba47b64cbabd566569e8e221d053",
+      "lastModificationDate": 1771140436554,
+      "contentHash": "79c4312c28095dffe5f0830d5971ec38",
       "sourceName": "contracts/ZeroToken.sol",
       "solcConfig": {
         "version": "0.8.22",
