@@ -8,16 +8,16 @@ const { ethers } = require("hardhat");
  */
 async function main() {
   // ZeroStake 合约地址
-  const zeroStakeAddress = "0x2Ca55714a7F649E3295458D0709B452139f43A1c";
+  const zeroStakeAddress = "0xd07E97a3BFD5Bd3b5756f1711CB1F60035C7Cb79";
   
   const zeroStake = await ethers.getContractAt("ZeroStake", zeroStakeAddress);
 
-  const [deployer] = await ethers.getSigners();
+  const [owner] = await ethers.getSigners();
 
-  console.log("Deployer address:", deployer.address);
+  console.log("Deployer address:", owner.address);
   
-  const nonce = await ethers.provider.getTransactionCount(deployer.address, "latest");
-  const pendingNonce = await ethers.provider.getTransactionCount(deployer.address, "pending");
+  const nonce = await ethers.provider.getTransactionCount(owner.address, "latest");
+  const pendingNonce = await ethers.provider.getTransactionCount(owner.address, "pending");
   
   console.log("Current nonce:", nonce);
   console.log("Pending nonce:", pendingNonce);
@@ -37,11 +37,11 @@ async function main() {
     
     // 检查部署者是否具有 ADMIN_ROLE
     const adminRole = await zeroStake.ADMIN_ROLE();
-    const deployerIsAdmin = await zeroStake.hasRole(adminRole, deployer.address);
+    const deployerIsAdmin = await zeroStake.hasRole(adminRole, owner.address);
     
     // 检查 DEFAULT_ADMIN_ROLE
     const defaultAdminRole = await zeroStake.DEFAULT_ADMIN_ROLE();
-    const deployerIsDefaultAdmin = await zeroStake.hasRole(defaultAdminRole, deployer.address);
+    const deployerIsDefaultAdmin = await zeroStake.hasRole(defaultAdminRole, owner.address);
     
     console.log("Deployer is ADMIN_ROLE:", deployerIsAdmin);
     console.log("Deployer is DEFAULT_ADMIN_ROLE:", deployerIsDefaultAdmin);
@@ -60,7 +60,7 @@ async function main() {
     console.log("- Unstake locked blocks:", 10);
     
     // 发送交易
-    const tx = await zeroStake.connect(deployer).addPool(
+    const tx = await zeroStake.connect(owner).addPool(
       ethers.ZeroAddress,   // 质押代币地址 (0x0 = ETH池)
       500,                  // 质押池权重
       1000,                 // 最小存款金额 (wei)

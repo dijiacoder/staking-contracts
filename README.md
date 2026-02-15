@@ -45,7 +45,7 @@ npx hardhat run scripts/deployZeroToken.js --network localhost
 
 ```bash
 # 部署到 Sepolia 测试网
-npx hardhat run scripts/deploy.js --network sepolia
+npx hardhat run scripts/deployZeroToken.js --network sepolia
 ```
 
 ### 运行测试

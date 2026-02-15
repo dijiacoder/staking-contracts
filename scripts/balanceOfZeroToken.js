@@ -8,7 +8,7 @@ const { ethers } = require("hardhat");
  */
 async function main() {
   // ZeroStake 合约地址
-  const zeroTokenAddress = "0x36d7166ba5D1e1576e3121E77F844547B80c4D30";
+  const zeroTokenAddress = "0xcf638f2bC90221Fd4CCdF659C3447311Af01e793";
   const [owner,test02,test03] = await ethers.getSigners();
 
   console.log("user address:", test02.address);

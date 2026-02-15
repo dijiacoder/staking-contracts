@@ -8,13 +8,13 @@ const { ethers } = require("hardhat");
  */
 async function main() {
   // ZeroStake 合约地址
-  const zeroStakeAddress = "0x9e0ba4bDA466501d22E797F86f1E55bd4512925D";
+  const zeroStakeAddress = "0xd07E97a3BFD5Bd3b5756f1711CB1F60035C7Cb79";
   
   const zeroStake = await ethers.getContractAt("ZeroStake", zeroStakeAddress);
 
-  const [deployer,test02,test03] = await ethers.getSigners();
+  const [owner,test02,test03] = await ethers.getSigners();
 
-  console.log("test02 address:", test02.address);
+  console.log("user(test02) address:", test02.address);
   
   const nonce = await ethers.provider.getTransactionCount(test02.address, "latest");
   const pendingNonce = await ethers.provider.getTransactionCount(test02.address, "pending");
@@ -44,7 +44,7 @@ async function main() {
     
     // 检查最小存款金额
     const minDeposit = ethPoolInfo.minDepositAmount;
-    const depositAmount = minDeposit > 0 ? minDeposit : ethers.parseEther("0.001"); // 使用最小存款金额或0.001 ETH
+    const depositAmount = minDeposit > 0 ? minDeposit : ethers.parseEther("0.01"); // 使用最小存款金额或0.001 ETH
     
     console.log("Depositing ETH:");
     console.log("- Amount:", ethers.formatEther(depositAmount), "ETH");

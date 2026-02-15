@@ -8,7 +8,7 @@ const { ethers } = require("hardhat");
  */
 async function main() {
   // ZeroStake 合约地址
-  const zeroStakeAddress = "0x2Ca55714a7F649E3295458D0709B452139f43A1c";
+  const zeroStakeAddress = "0xd07E97a3BFD5Bd3b5756f1711CB1F60035C7Cb79";
   
   const zeroStake = await ethers.getContractAt("ZeroStake", zeroStakeAddress);
 
@@ -81,7 +81,20 @@ async function main() {
     console.log("Updated pending rewards:", ethers.formatEther(updatedPendingRewards), "ZeroTokens");
     console.log("- Claim completed successfully!");
 
-    // 查询 ZeroToken的数量
+    // 查询正确的 ZeroToken 地址
+    const zeroTokenAddress = await zeroStake.ZeroToken();
+    console.log("Stake合约中的Token地址:", zeroTokenAddress);
+
+    // 获取 ZeroToken 合约
+    const zeroToken = await ethers.getContractAt("ZeroToken", zeroTokenAddress);
+
+    // 查询质押合约余额
+    const stakeBalance = await zeroToken.balanceOf(zeroStakeAddress);
+    console.log("质押合约余额:", ethers.formatEther(stakeBalance));
+
+    // 查询用户余额
+    const userBalance = await zeroToken.balanceOf(test02.address);
+    console.log("test02 余额:", ethers.formatEther(userBalance));
   } catch (error) {
     console.error("=== Error ===");
     console.error(error.message);

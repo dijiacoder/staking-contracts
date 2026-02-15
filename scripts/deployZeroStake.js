@@ -9,7 +9,7 @@ const { ethers, upgrades } = require("hardhat");
  * 
  * 打印：
  * ...
- * ZeroStake deployed to: 0x2Ca55714a7F649E3295458D0709B452139f43A1c
+ * ZeroStake deployed to: 0xd07E97a3BFD5Bd3b5756f1711CB1F60035C7Cb79
  * ...
  * 
  */
@@ -32,13 +32,13 @@ async function main() {
   console.log("Account balance:", (await owner.provider.getBalance(owner.address)).toString());
 
   // ZeroToken 合约地址
-  const zeroTokenAddress = "0x36d7166ba5D1e1576e3121E77F844547B80c4D30";
+  const zeroTokenAddress = "0xcf638f2bC90221Fd4CCdF659C3447311Af01e793";
   
   // 质押起始区块高度,可以去sepolia上面读取最新的区块高度
-  const startBlock = 10263823;
+  const startBlock = 10264246;
   
   // 质押结束的区块高度,sepolia 出块时间是12s,想要质押合约运行x秒,那么endBlock = startBlock + x/12
-  const endBlock = 10265823;
+  const endBlock = 10266246;
   
   // 每个区块奖励的ZeroToken数量 (0.02 tokens per block)
   const rewardPerBlock = "20000000000000000";
