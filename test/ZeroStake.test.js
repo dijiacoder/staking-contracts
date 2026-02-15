@@ -262,7 +262,7 @@ describe("ZeroStake", function () {
       ).to.emit(zeroStake, "AddPool");
 
       const finalPoolLength = await zeroStake.poolLength();
-      expect(finalPoolLength).to.equal(initialPoolLength + 1);
+      expect(finalPoolLength).to.equal(initialPoolLength + 1n)
     });
 
     it("非管理员不能添加新池", async function () {
