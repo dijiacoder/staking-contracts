@@ -49,6 +49,11 @@ npx hardhat run scripts/deployZeroStake.js --network sepolia
 npx hardhat test
 ```
 
+```bash
+# 单测覆盖率
+npx hardhat coverage
+```
+
 ## 合约功能
 
 ### ZeroToken.sol
