@@ -2,9 +2,9 @@ const { ethers } = require("hardhat");
 
 /**
  * 向 ZeroStake 合约存入 ETH
- * 
+ *
  * 使用方法:
- * npx hardhat run scripts/depositETH.js --network sepolia
+ * npx hardhat run scripts/testDepositETH.js --network sepolia
  */
 async function main() {
   // ZeroStake 合约地址
@@ -14,9 +14,7 @@ async function main() {
 
   const [deployer,test02,test03] = await ethers.getSigners();
 
-  console.log("Deployer address:", deployer.address);
   console.log("test02 address:", test02.address);
-  console.log("test03 address:", test03.address);
   
   const nonce = await ethers.provider.getTransactionCount(test02.address, "latest");
   const pendingNonce = await ethers.provider.getTransactionCount(test02.address, "pending");
@@ -29,9 +27,6 @@ async function main() {
     console.log("Suggestion: Wait 1-2 minutes before running the script again");
     return;
   }
-  
-  // 延时函数
-  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
   
   try {
     console.log("Sending transaction...");
@@ -51,7 +46,7 @@ async function main() {
     const minDeposit = ethPoolInfo.minDepositAmount;
     const depositAmount = minDeposit > 0 ? minDeposit : ethers.parseEther("0.001"); // 使用最小存款金额或0.001 ETH
     
-    console.log("\\nDepositing ETH:");
+    console.log("Depositing ETH:");
     console.log("- Amount:", ethers.formatEther(depositAmount), "ETH");
     console.log("- Pool ID: 0 (ETH pool)");
     
@@ -62,41 +57,32 @@ async function main() {
       gasLimit: 500000,
     });
     
-    console.log("\\nTransaction sent, hash:", tx.hash);
+    console.log("Transaction sent, hash:", tx.hash);
     console.log("Waiting for confirmation...");
     
     // 等待交易确认
     const receipt = await tx.wait(1);
     
-    console.log("\\n=== Transaction Successful ===");
+    console.log("=== Transaction Successful ===");
     console.log("Gas used:", receipt.gasUsed.toString());
     console.log("Block number:", receipt.blockNumber);
     
-    // 等待状态更新
-    await delay(3000);
-    
     // 查询更新后的池信息
     const updatedEthPoolInfo = await zeroStake.pool(0);
-    console.log("\nUpdated ETH pool info:");
+    console.log("Updated ETH pool info:");
     console.log("- Current staked amount:", updatedEthPoolInfo.stTokenAmount.toString(), "wei");
         
     // 查询用户信息
     const userInfo = await zeroStake.user(0, test02.address);
-    console.log("\nUser info after deposit:");
+    console.log("User info after deposit:");
     console.log("- Staked amount:", ethers.formatEther(userInfo.stAmount), "ETH");
     console.log("- Finished ZeroToken:", userInfo.finishedZeroToken.toString());
     console.log("- Pending ZeroToken:", userInfo.pendingZeroToken.toString());
         
     console.log("- Deposited successfully!");
   } catch (error) {
-    console.error("\\n=== Error ===");
+    console.error("=== Error ===");
     console.error(error.message);
-    
-    const msg = error.message;
-    if (msg.includes("deposit amount is too small")) console.log("\\nTip: Deposit amount is less than minimum required");
-    else if (msg.includes("invalid staking token address")) console.log("\\nTip: The pool is not configured as ETH pool");
-    else if (msg.includes("in-flight")) console.log("\nTip: Wait 1-2 min or check https://sepolia.etherscan.io/address/" + test02.address);
-    
     process.exit(1);
   }
 }

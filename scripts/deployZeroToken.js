@@ -16,6 +16,19 @@ const { ethers } = require("hardhat");
  */
 async function main() {
   const [deployer] = await ethers.getSigners();
+
+  const nonce = await ethers.provider.getTransactionCount(deployer.address, "latest");
+  const pendingNonce = await ethers.provider.getTransactionCount(deployer.address, "pending");
+
+  console.log("Current nonce:", nonce);
+  console.log("Pending nonce:", pendingNonce);
+
+  if (pendingNonce > nonce) {
+    console.log("Warning: There are", pendingNonce - nonce, "pending transactions, please wait for them to complete.");
+    console.log("Suggestion: Wait 1-2 minutes before running the script again");
+    return;
+  }
+
   console.log("Deploying contracts with the account:", deployer.address);
   console.log("Account balance:", (await deployer.provider.getBalance(deployer.address)).toString());
 
@@ -30,7 +43,8 @@ async function main() {
     console.log("ZeroToken deployed to:", zeroTokenAddress);
 
   } catch (error) {
-    console.error("Error deploying ZeroToken:", error);
+    console.error("=== Error ===");
+    console.error(error.message);
     process.exit(1);
   }
 }

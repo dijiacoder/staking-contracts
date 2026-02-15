@@ -8,13 +8,26 @@ const { ethers, upgrades } = require("hardhat");
  * npx hardhat run scripts/deployZeroStake.js --network sepolia
  * 
  * 打印：
- * Deploying ZeroStake contract with the account: 0x248b56aa46fA791ef70a217FE2AE631049eF9472
  * ...
- * ZeroStake deployed to: 0x58C7F972fDBdb4075832653c5e8B132388Ec7bAb
+ * ZeroStake deployed to: 0x2Ca55714a7F649E3295458D0709B452139f43A1c
+ * ...
  * 
  */
 async function main() {
   const [deployer] = await ethers.getSigners();
+
+  const nonce = await ethers.provider.getTransactionCount(deployer.address, "latest");
+  const pendingNonce = await ethers.provider.getTransactionCount(deployer.address, "pending");
+
+  console.log("Current nonce:", nonce);
+  console.log("Pending nonce:", pendingNonce);
+
+  if (pendingNonce > nonce) {
+    console.log("Warning: There are", pendingNonce - nonce, "pending transactions, please wait for them to complete.");
+    console.log("Suggestion: Wait 1-2 minutes before running the script again");
+    return;
+  }
+
   console.log("Deploying ZeroStake contract with the account:", deployer.address);
   console.log("Account balance:", (await deployer.provider.getBalance(deployer.address)).toString());
 
@@ -22,10 +35,10 @@ async function main() {
   const zeroTokenAddress = "0x36d7166ba5D1e1576e3121E77F844547B80c4D30";
   
   // 质押起始区块高度,可以去sepolia上面读取最新的区块高度
-  const startBlock = 10231754;
+  const startBlock = 10263823;
   
   // 质押结束的区块高度,sepolia 出块时间是12s,想要质押合约运行x秒,那么endBlock = startBlock + x/12
-  const endBlock = 10232054;
+  const endBlock = 10265823;
   
   // 每个区块奖励的ZeroToken数量 (0.02 tokens per block)
   const rewardPerBlock = "20000000000000000";
@@ -57,7 +70,8 @@ async function main() {
     console.log("Implementation address:", implAddress);
     
   } catch (error) {
-    console.error("Error deploying ZeroStake:", error);
+    console.error("=== Error ===");
+    console.error(error.message);
     process.exit(1);
   }
 }

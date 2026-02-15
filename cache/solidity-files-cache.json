@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "D:\\DijiaCoder\\WEB3\\dijiacoder\\staking-contracts\\contracts\\ZeroStake.sol": {
-      "lastModificationDate": 1770819473773,
-      "contentHash": "da39e9f2ed8e3e28ad0647fffc575338",
+      "lastModificationDate": 1771130661550,
+      "contentHash": "c6771741d8a13da92bba00ac74f8230c",
       "sourceName": "contracts/ZeroStake.sol",
       "solcConfig": {
         "version": "0.8.22",

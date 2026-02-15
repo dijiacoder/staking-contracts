@@ -2,9 +2,9 @@ const { ethers } = require("hardhat");
 
 /**
  * 从 ZeroStake 合约领取质押奖励
- * 
+ *
  * 使用方法:
- * npx hardhat run scripts/claim.js --network sepolia
+ * npx hardhat run scripts/testClaim.js --network sepolia
  */
 async function main() {
   // ZeroStake 合约地址
@@ -28,9 +28,6 @@ async function main() {
     return;
   }
   
-  // 延时函数
-  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-  
   try {
     console.log("Sending transaction...");
     
@@ -44,21 +41,22 @@ async function main() {
     console.log("- Pool weight:", poolInfo.poolWeight.toString());
     
     // 获取用户的质押信息
-    const userInfo = await zeroStake.userInfo(pid, deployer.address);
-    console.log("\\nUser info for pool", pid, ":");
-    console.log("- Amount staked:", ethers.formatEther(userInfo.amount), "tokens");
-    console.log("- Reward debt:", userInfo.rewardDebt.toString());
+    const userInfo = await zeroStake.user(pid, deployer.address);
+    console.log("User info for pool", pid, ":");
+    console.log("- Amount staked:", ethers.formatEther(userInfo.stAmount), "ETH");
+    console.log("- Finished ZeroToken:", userInfo.finishedZeroToken.toString());
+    console.log("- Pending ZeroToken:", userInfo.pendingZeroToken.toString());
     
     // 获取可领取的奖励金额
     const pendingRewards = await zeroStake.pendingZeroToken(pid, deployer.address);
-    console.log("\\nPending rewards:", ethers.formatEther(pendingRewards), "ZeroTokens");
+    console.log("Pending rewards:", ethers.formatEther(pendingRewards), "ZeroTokens");
     
     if (pendingRewards === 0n) {
-      console.log("\\nNo pending rewards to claim");
+      console.log("No pending rewards to claim");
       return;
     }
     
-    console.log("\\nClaiming rewards from pool:");
+    console.log("Claiming rewards from pool:");
     console.log("- Pool ID:", pid);
     console.log("- Rewards amount:", ethers.formatEther(pendingRewards), "ZeroTokens");
     
@@ -68,32 +66,23 @@ async function main() {
       gasLimit: 500000,
     });
     
-    console.log("\\nTransaction sent, hash:", tx.hash);
+    console.log("Transaction sent, hash:", tx.hash);
     console.log("Waiting for confirmation...");
     
     // 等待交易确认
     const receipt = await tx.wait(1);
     
-    console.log("\\n=== Transaction Successful ===");
+    console.log("=== Transaction Successful ===");
     console.log("Gas used:", receipt.gasUsed.toString());
     console.log("Block number:", receipt.blockNumber);
     
-    // 等待状态更新
-    await delay(3000);
-    
     // 查询更新后的可领取奖励
     const updatedPendingRewards = await zeroStake.pendingZeroToken(pid, deployer.address);
-    console.log("\\nUpdated pending rewards:", ethers.formatEther(updatedPendingRewards), "ZeroTokens");
+    console.log("Updated pending rewards:", ethers.formatEther(updatedPendingRewards), "ZeroTokens");
     console.log("- Claim completed successfully!");
   } catch (error) {
-    console.error("\\n=== Error ===");
+    console.error("=== Error ===");
     console.error(error.message);
-    
-    const msg = error.message;
-    if (msg.includes("invalid pid")) console.log("\\nTip: Invalid pool ID");
-    else if (msg.includes("claim paused")) console.log("\\nTip: Claiming is currently paused");
-    else if (msg.includes("in-flight")) console.log("\\nTip: Wait 1-2 min or check https://sepolia.etherscan.io/address/" + deployer.address);
-    
     process.exit(1);
   }
 }

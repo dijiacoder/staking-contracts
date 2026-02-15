@@ -2,13 +2,13 @@ const { ethers } = require("hardhat");
 
 /**
  * 为 ZeroStake 合约添加新的质押池
- * 
+ *
  * 使用方法:
- * npx hardhat run scripts/addPool.js --network sepolia
+ * npx hardhat run scripts/testAddPool.js --network sepolia
  */
 async function main() {
   // ZeroStake 合约地址
-  const zeroStakeAddress = "0x58C7F972fDBdb4075832653c5e8B132388Ec7bAb";
+  const zeroStakeAddress = "0x2Ca55714a7F649E3295458D0709B452139f43A1c";
   
   const zeroStake = await ethers.getContractAt("ZeroStake", zeroStakeAddress);
 
@@ -27,9 +27,6 @@ async function main() {
     console.log("Suggestion: Wait 1-2 minutes before running the script again");
     return;
   }
-  
-  // 延时函数
-  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
   
   // 获取 ZeroToken 地址
   const zeroTokenAddress = await zeroStake.ZeroToken();
@@ -55,19 +52,19 @@ async function main() {
     
     // 显示即将添加的池信息
     const currentPoolLength = await zeroStake.poolLength();
-    console.log("\nAdding new pool:");
+    console.log("Adding new pool:");
     console.log("- Pool index:", currentPoolLength.toString());
     console.log("- Staking token:", ethers.ZeroAddress, "(ETH pool)");
     console.log("- Pool weight:", 500);
     console.log("- Min deposit amount:", 1000, "wei");
-    console.log("- Unstake locked blocks:", 50);
+    console.log("- Unstake locked blocks:", 10);
     
     // 发送交易
     const tx = await zeroStake.connect(deployer).addPool(
       ethers.ZeroAddress,   // 质押代币地址 (0x0 = ETH池)
       500,                  // 质押池权重
       1000,                 // 最小存款金额 (wei)
-      50,                 // 取消质押锁定区块数
+      10,                 // 取消质押锁定区块数
       true,                 // 是否批量更新池
       {
         nonce: nonce,
@@ -75,27 +72,24 @@ async function main() {
       }
     );
     
-    console.log("\nTransaction sent, hash:", tx.hash);
+    console.log("Transaction sent, hash:", tx.hash);
     console.log("Waiting for confirmation...");
     
     // 等待交易确认
     const receipt = await tx.wait(1);
     
-    console.log("\n=== Transaction Successful ===");
+    console.log("=== Transaction Successful ===");
     console.log("Gas used:", receipt.gasUsed.toString());
     console.log("Block number:", receipt.blockNumber);
     
-    // 等待状态更新
-    await delay(3000);
-    
     // 查询更新后的池数量
     const finalPoolLength = await zeroStake.poolLength();
-    console.log("\nCurrent pool count:", finalPoolLength.toString());
+    console.log("Current pool count:", finalPoolLength.toString());
     
     // 如果有新的池，显示其信息
     if (finalPoolLength > 0) {
       const newPool = await zeroStake.pool(finalPoolLength - 1n);
-      console.log("\nNew pool details:");
+      console.log("New pool details:");
       console.log("- Token address:", newPool.stTokenAddress);
       console.log("- Pool weight:", newPool.poolWeight.toString());
       console.log("- Min deposit:", newPool.minDepositAmount.toString(), "wei");
@@ -103,15 +97,8 @@ async function main() {
     }
 
   } catch (error) {
-    console.error("\n=== Error ===");
+    console.error("=== Error ===");
     console.error(error.message);
-    
-    const msg = error.message;
-    if (msg.includes("AccessControl")) console.log("\nTip: Grant ADMIN_ROLE to deployer address");
-    else if (msg.includes("in-flight")) console.log("\nTip: Wait 1-2 min or check https://sepolia.etherscan.io/address/" + deployer.address);
-    else if (msg.includes("invalid staking token")) console.log("\nTip: Use ethers.ZeroAddress for first ETH pool");
-    else if (msg.includes("Already ended")) console.log("\nTip: Staking period ended, update endBlock in contract");
-    
     process.exit(1);
   }
 }
