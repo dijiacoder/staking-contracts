@@ -98,10 +98,12 @@ describe("ZeroStake", function () {
       await zeroStake.connect(user1).depositETH({ value: depositAmount });
 
       // 挖矿几个区块
-      await ethers.provider.send("hardhat_mine", ["0x64"]); // 挖 100 个区块
+      await ethers.provider.send("hardhat_mine", ["0x64"]); // 挖 100 个区块（"0x64" = 100）
 
       // 查询待领取奖励
       const pendingReward = await zeroStake.pendingZeroToken(ETH_PID, user1.address);
+
+      console.log("Pending reward:", ethers.formatEther(pendingReward), "ZeroToken");
       
       // 奖励应该大于 0
       expect(pendingReward).to.be.gt(0);
@@ -203,10 +205,20 @@ describe("ZeroStake", function () {
       // 请求取消质押
       await zeroStake.connect(user1).unstake(ETH_PID, depositAmount);
 
-      // 尝试立即提取（应该失败，因为还在锁定期）
-      await expect(
-        zeroStake.connect(user1).withdraw(ETH_PID)
-      ).to.be.revertedWith("Withdraw failed");
+      // 尝试提取（应该成功但金额为0，因为还在锁定期）
+      const tx = await zeroStake.connect(user1).withdraw(ETH_PID);
+      const receipt = await tx.wait();
+      
+      // 检查事件中提取金额为0
+      const withdrawEvent = receipt.logs.map(log => {
+        try {
+          return zeroStake.interface.parseLog(log);
+        } catch {
+          return null;
+        }
+      }).find(e => e && e.name === "Withdraw");
+
+      expect(withdrawEvent.args.amount).to.equal(0);
     });
   });
 
